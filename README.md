@@ -105,7 +105,114 @@ The integration will automatically:
 
 ## Energy Dashboard Setup
 
-To use with Home Assistant's Energy Dashboard:
+### Required: Battery Energy Tracking
+
+The Jullix API doesn't provide cumulative battery charge/discharge totals, so you need to create these using Home Assistant helpers.
+
+#### Step 1: Create Integral Sensor Helper
+
+1. Go to **Settings → Devices & Services → Helpers**
+2. Click **+ Create Helper** → **Integral sensor**
+3. Configure the following fields in order:
+   - **Name**: `Battery Energy Total`
+   - **Unit prefix**: k (for kWh)
+   - **Time unit**: hour
+   - **Input sensor**: Your battery power sensor (e.g., `sensor.sofar_hyd_4000_ep_battery_power`)
+   - **Integration method**: Left Riemann sum
+   - **Precision**: 2
+   - **Max sub interval**: Leave at default (0)
+4. Click **Submit**
+
+#### Step 2: Create Template Sensors
+
+Go to **Settings → Devices & Services → Helpers** and create two template sensors:
+
+**Battery Energy Charged:**
+1. Click **+ Create Helper** → **Template** → **Template a sensor**
+2. Configure:
+   - **Name**: `Battery Energy Charged`
+   - **State template**:
+     ```jinja
+     {% set power = states('sensor.YOUR_DEVICE_battery_power')|float(0) %}
+     {% set total = states('sensor.battery_energy_total')|float(0)|abs %}
+     {% if power < 0 %}
+       {{ total }}
+     {% else %}
+       {{ this.state if this is defined and this.state not in ['unknown', 'unavailable', 'none', None] else 0 }}
+     {% endif %}
+     ```
+   - **Unit of measurement**: `kWh`
+   - **Device class**: Select "Energy" from the dropdown
+   - **State class**: Select "Total increasing" from the dropdown
+
+**Battery Energy Discharged:**
+1. Click **+ Create Helper** → **Template** → **Template a sensor**
+2. Configure:
+   - **Name**: `Battery Energy Discharged`
+   - **State template**:
+     ```jinja
+     {% set power = states('sensor.YOUR_DEVICE_battery_power')|float(0) %}
+     {% set total = states('sensor.battery_energy_total')|float(0)|abs %}
+     {% if power > 0 %}
+       {{ total }}
+     {% else %}
+       {{ this.state if this is defined and this.state not in ['unknown', 'unavailable', 'none', None] else 0 }}
+     {% endif %}
+     ```
+   - **Unit of measurement**: `kWh`
+   - **Device class**: Select "Energy" from the dropdown
+   - **State class**: Select "Total increasing" from the dropdown
+
+**Note:** Replace `YOUR_DEVICE` with your actual inverter device name (e.g., `sofar_hyd_4000_ep`).
+
+<details>
+<summary>Alternative: YAML Configuration</summary>
+
+If you prefer YAML, add this to your `configuration.yaml`:
+
+```yaml
+sensor:
+  - platform: integration
+    source: sensor.YOUR_DEVICE_battery_power
+    name: battery_energy_total
+    unit_prefix: k
+    method: left
+
+template:
+  - sensor:
+      - name: "Battery Energy Charged"
+        unique_id: battery_energy_charged
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set power = states('sensor.YOUR_DEVICE_battery_power')|float(0) %}
+          {% set total = states('sensor.battery_energy_total')|float(0)|abs %}
+          {% if power < 0 %}
+            {{ total }}
+          {% else %}
+            {{ this.state if this is defined and this.state not in ['unknown', 'unavailable', 'none', None] else 0 }}
+          {% endif %}
+
+      - name: "Battery Energy Discharged"
+        unique_id: battery_energy_discharged
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set power = states('sensor.YOUR_DEVICE_battery_power')|float(0) %}
+          {% set total = states('sensor.battery_energy_total')|float(0)|abs %}
+          {% if power > 0 %}
+            {{ total }}
+          {% else %}
+            {{ this.state if this is defined and this.state not in ['unknown', 'unavailable', 'none', None] else 0 }}
+          {% endif %}
+```
+
+Then restart Home Assistant.
+</details>
+
+### Configure Energy Dashboard
 
 1. Go to Settings → Dashboards → Energy
 2. Configure the following:
@@ -116,6 +223,10 @@ To use with Home Assistant's Energy Dashboard:
 
 **Solar Panels:**
 - Solar production: `sensor.jullix_solar_energy_produced`
+
+**Home Battery Storage:**
+- Energy going in to the battery: `sensor.jullix_battery_energy_charged`
+- Energy coming out of the battery: `sensor.jullix_battery_energy_discharged`
 
 **Gas Consumption:**
 - Gas consumption: `sensor.jullix_gas`
