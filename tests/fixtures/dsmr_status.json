@@ -1,0 +1,12 @@
+{
+  "power": {"value": 0.878, "title": "Power", "units": "kW"},
+  "energy-in": {"value": 4380.46, "title": "Energy In", "units": "kWh"},
+  "energy-out": {"value": 176.51, "title": "Energy Out", "units": "kWh"},
+  "gas": {"value": 1036.92, "title": "Gas", "units": "m³"},
+  "water": {"value": 0, "title": "Water", "units": "m³"},
+  "tariff": {"value": "Yes", "title": "Tariff", "units": ""},
+  "id": {"value": "1SAG3200415379", "title": "Meter id", "units": ""},
+  "connected": true,
+  "enabled": true,
+  "hw_disabled": false
+}

@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Jullix Energy Management (Local)",
+        "description": "Enter the local IP address of your Jullix device",
+        "data": {
+          "host": "IP address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Jullix device. Please check the IP address and ensure the device is powered on and connected to your network.",
+      "timeout": "Connection to the Jullix device timed out. Please check your network connection and try again.",
+      "unknown": "An unexpected error occurred. Please check the logs for more details."
+    },
+    "abort": {
+      "already_configured": "This Jullix device is already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "grid_power": {
+        "name": "Grid power"
+      },
+      "energy_import": {
+        "name": "Energy import"
+      },
+      "energy_export": {
+        "name": "Energy export"
+      },
+      "gas": {
+        "name": "Gas consumption"
+      },
+      "water": {
+        "name": "Water consumption"
+      },
+      "meter_id": {
+        "name": "Meter ID"
+      },
+      "inverter_voltage_l1": {
+        "name": "Voltage L1"
+      },
+      "inverter_current_l1": {
+        "name": "Current L1"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "battery_voltage": {
+        "name": "Battery voltage"
+      },
+      "battery_current": {
+        "name": "Battery current"
+      },
+      "battery_soc": {
+        "name": "Battery level"
+      },
+      "solar_production": {
+        "name": "Solar energy produced"
+      },
+      "house_consumption": {
+        "name": "House energy consumed"
+      },
+      "inverter_power": {
+        "name": "Inverter power"
+      },
+      "pv_power": {
+        "name": "PV power"
+      },
+      "grid_power_inverter": {
+        "name": "Grid power"
+      }
+    },
+    "binary_sensor": {
+      "meter_connected": {
+        "name": "Meter connected"
+      },
+      "meter_enabled": {
+        "name": "Meter enabled"
+      },
+      "inverter_ready": {
+        "name": "Inverter ready"
+      },
+      "battery_low": {
+        "name": "Battery low"
+      },
+      "comm_fail": {
+        "name": "Communication failure"
+      },
+      "dsmr_fail": {
+        "name": "DSMR failure"
+      },
+      "battery_charging": {
+        "name": "Battery charging"
+      },
+      "battery_discharging": {
+        "name": "Battery discharging"
+      }
+    }
+  }
+}

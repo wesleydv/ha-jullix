@@ -1,0 +1,25 @@
+{
+  "model": "SOFARHYD4000EP",
+  "desc": "Sofar HYD 4000-EP",
+  "running": true,
+  "data": {
+    "voltage_l1": 232.7,
+    "current_l1": 1.27,
+    "battery_power": 0,
+    "battery_voltage": 52.9,
+    "battery_current": 0,
+    "battery_SOC": 51,
+    "energy_produced": 6119.4,
+    "energy_consumed": 6847.2,
+    "power": 0.24,
+    "pv_power": 0.15,
+    "controlpower": 0,
+    "gridpower": 0.90,
+    "ready": true,
+    "low_battery": false,
+    "comm_fail": false,
+    "dsmr_fail": false,
+    "charging": false,
+    "discharging": false
+  }
+}

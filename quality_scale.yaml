@@ -1,0 +1,17 @@
+# Quality Scale tracking for Jullix integration
+# Target: Bronze level compliance
+
+rules:
+  # Bronze tier rules (mandatory)
+  config-flow: done
+  entity-unique-id: done
+
+  action-setup:
+    status: exempt
+    comment: Integration does not register custom actions
+
+  entity-availability: done
+  entity-device-class: done
+  entity-event-setup: done
+  runtime-data: done
+  test-before-setup: done

@@ -1,0 +1,11 @@
+{
+  "domain": "jullix",
+  "name": "Jullix Energy Management (Local)",
+  "codeowners": ["@jullix"],
+  "config_flow": true,
+  "documentation": "https://github.com/jullix/home-assistant",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "1.0.0"
+}
