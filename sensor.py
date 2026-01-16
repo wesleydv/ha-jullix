@@ -4,16 +4,23 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
+from homeassistant.components.sensor import (
+    RestoreSensor,
+    SensorEntity,
+    SensorEntityDescription,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import JullixConfigEntry, JullixCoordinator
 from .const import (
+    BATTERY_ENERGY_SENSORS,
     DEVICE_INVERTER,
     DEVICE_METER,
     DOMAIN,
@@ -83,6 +90,12 @@ async def async_setup_entry(
     entities.extend(
         JullixSensor(coordinator, description, DEVICE_INVERTER)
         for description in inverter_sensor_descriptions
+    )
+
+    # Create battery energy tracking sensors
+    entities.extend(
+        BatteryEnergySensor(coordinator, description)
+        for description in BATTERY_ENERGY_SENSORS
     )
 
     async_add_entities(entities)
@@ -160,4 +173,98 @@ class JullixSensor(CoordinatorEntity[JullixCoordinator], SensorEntity):
             return self.coordinator.data.get("dsmr", {}).get("connected", False)
 
         # For inverter, check if it's running
+        return self.coordinator.data.get("inverter", {}).get("running", False)
+
+
+class BatteryEnergySensor(CoordinatorEntity[JullixCoordinator], RestoreSensor):
+    """Battery energy tracking sensor using Riemann sum integration."""
+
+    _attr_has_entity_name = True
+    _unrecorded_attributes = frozenset({"last_period"})
+
+    def __init__(
+        self,
+        coordinator: JullixCoordinator,
+        description: SensorEntityDescription,
+    ) -> None:
+        """Initialize the battery energy sensor."""
+        super().__init__(coordinator)
+        self.entity_description = description
+        self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{description.key}"
+
+        # Initialize tracking variables
+        self._last_update_time: datetime | None = None
+        self._last_power: float | None = None
+        self._total_energy: float = 0.0
+
+        # Determine if this tracks charging or discharging
+        self._track_charging = description.key == "battery_energy_charged"
+
+        # Set device info
+        inverter_data = coordinator.data.get("inverter", {})
+        model = inverter_data.get("model", "Unknown")
+        desc = inverter_data.get("desc", "Solar Inverter")
+        manufacturer = model.capitalize() if model else "Unknown"
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"{DEVICE_INVERTER}_{coordinator.config_entry.entry_id}")},
+            name=desc,
+            manufacturer=manufacturer,
+            model=model,
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity added to hass."""
+        await super().async_added_to_hass()
+
+        # Restore previous state
+        if (last_sensor_data := await self.async_get_last_sensor_data()) is not None:
+            if last_sensor_data.native_value is not None:
+                self._total_energy = float(last_sensor_data.native_value)
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # Get current battery power (in kW)
+        inverter_data = self.coordinator.data.get("inverter", {})
+        if not inverter_data.get("running", False):
+            return
+
+        battery_power = inverter_data.get("data", {}).get("battery_power")
+        if battery_power is None:
+            return
+
+        now = dt_util.utcnow()
+
+        # Calculate energy increment using left Riemann sum
+        if self._last_update_time is not None and self._last_power is not None:
+            time_delta_hours = (now - self._last_update_time).total_seconds() / 3600
+
+            # Use left Riemann sum: energy = power × time
+            # Power is in kW, time in hours, so energy is in kWh
+            energy_increment = abs(self._last_power) * time_delta_hours
+
+            # Only accumulate if power direction matches what we're tracking
+            if self._track_charging and self._last_power < 0:
+                # Charging: negative power
+                self._total_energy += energy_increment
+            elif not self._track_charging and self._last_power > 0:
+                # Discharging: positive power
+                self._total_energy += energy_increment
+
+        # Update tracking variables for next calculation
+        self._last_update_time = now
+        self._last_power = battery_power
+
+        self.async_write_ha_state()
+
+    @property
+    def native_value(self) -> float:
+        """Return the state of the sensor."""
+        return round(self._total_energy, 2)
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        if not super().available:
+            return False
         return self.coordinator.data.get("inverter", {}).get("running", False)

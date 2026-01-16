@@ -70,6 +70,12 @@
       },
       "grid_power_inverter": {
         "name": "Grid power"
+      },
+      "battery_energy_charged": {
+        "name": "Battery energy charged"
+      },
+      "battery_energy_discharged": {
+        "name": "Battery energy discharged"
       }
     },
     "binary_sensor": {

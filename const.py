@@ -211,6 +211,28 @@ INVERTER_SENSORS: tuple[SensorEntityDescription, ...] = (
     ),
 )
 
+# Battery Energy Tracking Sensor Descriptions
+BATTERY_ENERGY_SENSORS: tuple[SensorEntityDescription, ...] = (
+    SensorEntityDescription(
+        key="battery_energy_charged",
+        translation_key="battery_energy_charged",
+        name="Battery energy charged",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=2,
+    ),
+    SensorEntityDescription(
+        key="battery_energy_discharged",
+        translation_key="battery_energy_discharged",
+        name="Battery energy discharged",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=2,
+    ),
+)
+
 # Inverter Binary Sensor Descriptions
 INVERTER_BINARY_SENSORS: tuple[BinarySensorEntityDescription, ...] = (
     BinarySensorEntityDescription(

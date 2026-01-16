@@ -111,8 +111,5 @@ class JullixApiClient:
             JullixApiError: If connection test fails
 
         """
-        try:
-            await self.get_all_data()
-            return True
-        except JullixApiError:
-            raise
+        await self.get_all_data()
+        return True
