@@ -85,7 +85,7 @@ The integration will automatically:
 **Sensors:**
 - `sensor.jullix_inverter_voltage_l1` - Line voltage (V)
 - `sensor.jullix_inverter_current_l1` - Line current (A)
-- `sensor.jullix_battery_power` - Battery power (W, negative=charging, positive=discharging)
+- `sensor.jullix_battery_power` - Battery power (kW, negative=charging, positive=discharging)
 - `sensor.jullix_battery_voltage` - Battery voltage (V)
 - `sensor.jullix_battery_current` - Battery current (A)
 - `sensor.jullix_battery_level` - Battery state of charge (%)
@@ -115,7 +115,7 @@ The Jullix API doesn't provide cumulative battery charge/discharge totals, so yo
 2. Click **+ Create Helper** → **Integral sensor**
 3. Configure the following fields in order:
    - **Name**: `Battery Energy Total`
-   - **Unit prefix**: k (for kWh)
+   - **Unit prefix**: None (since power is already in kW)
    - **Time unit**: hour
    - **Input sensor**: Your battery power sensor (e.g., `sensor.sofar_hyd_4000_ep_battery_power`)
    - **Integration method**: Left Riemann sum
@@ -175,7 +175,7 @@ sensor:
   - platform: integration
     source: sensor.YOUR_DEVICE_battery_power
     name: battery_energy_total
-    unit_prefix: k
+    unit_prefix: none  # Power is already in kW, so kW × hour = kWh
     method: left
 
 template:
